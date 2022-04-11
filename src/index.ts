@@ -8,7 +8,7 @@ type GetChildClassProperties<T1 extends T2, T2> = NonFunctionProperties<
   Omit<T1, keyof T2>
 >;
 
-abstract class BaseEntity<T extends BaseEntity<T>> {
+abstract class BaseEntity<T extends BaseEntity<T> = any> {
   id: number = 1;
 
   create() {}
@@ -25,5 +25,17 @@ class User extends BaseEntity<User> {
 console.log(
   new User({
     name: "rhea-so",
+  })
+);
+
+// BaseEntity의 제네릭에 아무것도 안넣으면 기본 값 any
+class Any extends BaseEntity {
+  name: string;
+}
+
+console.log(
+  new Any({
+    name: "rhea-so",
+    hi: "",
   })
 );
