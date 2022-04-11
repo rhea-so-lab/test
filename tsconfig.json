@@ -19,7 +19,6 @@
             "mocha"
         ],
         "target": "es5",
-	"strict": true,
         "sourceMap": true,
         "allowJs": false,
         "moduleResolution": "node",

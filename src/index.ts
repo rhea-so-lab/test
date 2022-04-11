@@ -3,34 +3,47 @@ import _ from "lodash";
 type NonFunctionPropertyNames<T> = {
   [K in keyof T]: T[K] extends Function ? never : K;
 }[keyof T];
-type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
-type OmitStrict<T, K extends keyof T> = T extends any
-  ? Pick<T, Exclude<keyof T, K>>
-  : never;
 
-class BaseEntity {
-  id: number = 0;
+type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+
+type GetChildClassProperties<T1 extends T2, T2> = NonFunctionProperties<
+  Omit<T1, keyof T2>
+>;
+
+abstract class BaseEntity {
+  id: number = 1;
 
   create() {}
 }
 
 class User extends BaseEntity {
   name: string = "";
-  id2: number = -1;
-  test?: string = "";
 
-  static generate(
-    properties: NonFunctionProperties<OmitStrict<User, keyof BaseEntity>>
-  ): User {
-    const user: User = new User();
-
-    return _.assign(user, properties);
+  constructor(properties: GetChildClassProperties<User, BaseEntity>) {
+    super();
+    _.assign(this, properties);
   }
 }
 
 console.log(
-  User.generate({
-    name: "",
-    id2: 2,
+  new User({
+    name: "rhea-so",
   })
 );
+
+// ! Error 남. id랑 create를 선언해주면 안나겠지?
+// class Dummy {
+//   name: string = "";
+
+//   static generate(properties: GetChildProperties<Dummy, BaseEntity>): User {
+//     const dummy: Dummy = new Dummy();
+
+//     return _.assign(dummy, properties);
+//   }
+// }
+
+// console.log(
+//   Dummy.generate({
+//     name: "",
+//   })
+// );
