@@ -19,6 +19,7 @@
             "mocha"
         ],
         "target": "es5",
+	"strict": true,
         "sourceMap": true,
         "allowJs": false,
         "moduleResolution": "node",
@@ -27,14 +28,14 @@
         "noImplicitAny": false,
         "noImplicitThis": false,
         "noFallthroughCasesInSwitch": true,
-        "strictNullChecks": true,
+	"strictNullChecks": true,
         "noUnusedLocals": true,
         "removeComments": false,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "listFiles": false,
         "esModuleInterop": true,
-        "noStrictGenericChecks": false,
+        "noStrictGenericChecks": true,
         "declaration": true
     }
 }
