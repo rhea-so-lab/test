@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 type NonFunctionPropertyNames<T> = {
   [K in keyof T]: T[K] extends Function ? never : K;
 }[keyof T];
@@ -29,20 +27,3 @@ console.log(
     name: "rhea-so",
   })
 );
-
-// ! Error 남. id랑 create를 선언해주면 안나겠지?
-// class Dummy {
-//   name: string = "";
-
-//   static generate(properties: GetChildProperties<Dummy, BaseEntity>): User {
-//     const dummy: Dummy = new Dummy();
-
-//     return _.assign(dummy, properties);
-//   }
-// }
-
-// console.log(
-//   Dummy.generate({
-//     name: "",
-//   })
-// );
