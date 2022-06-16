@@ -1,42 +1,45 @@
-type NonFunctionPropertyNames<T> = {
-  [K in keyof T]: T[K] extends Function ? never : K;
-}[keyof T];
+import mysql from "mysql2/promise";
 
-type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+const MYSQL_HOST = "localhost";
+const MYSQL_USER = "root";
+const MYSQL_PW = "root";
+const MYSQL_DB = "test";
+const MYSQL_PORT = 3306;
 
-type GetChildClassProperties<T1 extends T2, T2> = NonFunctionProperties<
-  Omit<T1, keyof T2>
->;
+const pool = mysql.createPool({
+  host: MYSQL_HOST,
+  user: MYSQL_USER,
+  password: MYSQL_PW,
+  database: MYSQL_DB,
+  port: MYSQL_PORT,
+  connectTimeout: 5000,
+  connectionLimit: 30, //default 10
+});
 
-abstract class BaseEmbeddedEntity<T extends BaseEmbeddedEntity<T> = any> {
-  id: number = 1;
+let allTableDDL: string =
+  `INSTALL PLUGIN IF NOT EXISTS FEDERATED SONAME 'ha_federated.so';\n\n` +
+  `DROP SCHEMA IF EXISTS FEDERATED_SCHEMA;\n\n` +
+  `CREATE SCHEMA FEDERATED_SCHEMA DEFAULT CHARSET=utf8mb4;\n\n` +
+  `USE FEDERATED_SCHEMA;\n\n`;
 
-  create() {}
+pool
+  .getConnection()
+  .then(async (connection: mysql.PoolConnection) => {
+    for (const table of (
+      await connection.query("show tables;")
+    )[0] as Object[]) {
+      const tableName = table[`Tables_in_${MYSQL_DB}`];
+      let tableDDL: string = (
+        await connection.query(`show create table ${tableName};`)
+      )[0][0]["Create Table"];
 
-  constructor(properties: GetChildClassProperties<T, BaseEmbeddedEntity<T>>) {
-    Object.assign(this, properties);
-  }
-}
+      tableDDL = tableDDL.replace(/InnoDB/g, "FEDERATED");
+      tableDDL = tableDDL.replace(/MyISAM/g, "FEDERATED");
+      tableDDL += ` CONNECTION="mysql://${MYSQL_USER}:${MYSQL_PW}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}/${tableName}";\n\n`;
 
-class User extends BaseEmbeddedEntity<User> {
-  name: string;
-}
-
-console.log(
-  new User({
-    name: "rhea-so",
-    age: 22, // <- User Property가 아니어서 에러남. 제거시 빌드 성공.
+      allTableDDL += tableDDL;
+    }
   })
-);
-
-// BaseEmbeddedEntity의 제네릭에 아무것도 안넣으면 기본 값 any
-class Any extends BaseEmbeddedEntity {
-  name: string;
-}
-
-console.log(
-  new Any({
-    name: "rhea-so",
-    age: 22,
-  })
-);
+  .finally(() => {
+    console.log(allTableDDL);
+  });

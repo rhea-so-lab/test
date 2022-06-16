@@ -15,7 +15,8 @@
     "coverage": "nyc --reporter html --reporter text npm test"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "mysql2": "^2.3.3"
   },
   "devDependencies": {
     "@types/chai": "^4.2.21",
